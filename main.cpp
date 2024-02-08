@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
 #include <format>
+#include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "utils.h"
+#include "Shader.h"
 
 // Window dimensions
 const GLint WIDTH = 800;
@@ -55,19 +57,14 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     float vertices[] = {
-            0.5f,  0.5f, 0.0f,  // top right
-            0.5f, -0.5f, 0.0f,  // bottom right
-            -0.5f, -0.5f, 0.0f,  // bottom left
-            -0.5f,  0.5f, 0.0f   // top left
+            // Pos              // Color
+            0.5f,   0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // top right
+            0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // bottom left
     };
-    unsigned int indices[] = {  // note that we start from 0!
-            0, 1, 3,   // first triangle
-            1, 2, 3    // second triangle
+    unsigned int indices[] = {
+            0, 1, 2,   // first triangle
     };
-
-    GLuint vertShader = utils::compileShader("shaders/vert.glsl", GL_VERTEX_SHADER);
-    GLuint fragShader = utils::compileShader("shaders/frag.glsl", GL_FRAGMENT_SHADER);
-    GLuint shaderProgram = utils::createProgram(vertShader, fragShader);
 
     // VAO
     GLuint vao;
@@ -90,14 +87,19 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
+    glEnableVertexAttribArray(1);
 
     // Can safely unbind the buffer now, attrib ptr stored in vao
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Unbind VAO
     glBindVertexArray(0);
+
+    Shader shader("../shaders/vert.glsl", "../shaders/frag.glsl");
 
     // Wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -111,10 +113,16 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
+        shader.use();
         // glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+        float timeValue = glfwGetTime();
+        float scaleValue = sin(timeValue * 3) / 4.0f + 0.75f;
+        shader.setFloat("colorScale", scaleValue);
+
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -6,7 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(OpenGL main.cpp
         Linking/lib/glad.c
         utils.cpp
-        utils.h)
+        utils.h
+        Shader.cpp
+        Shader.h
+        Shader.h)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
