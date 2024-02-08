@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.26)
 project("OpenGL")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_executable(OpenGL main.cpp
-        Linking/lib/glad.c)
+        Linking/lib/glad.c
+        utils.cpp
+        utils.h)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
