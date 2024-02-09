@@ -9,7 +9,8 @@ add_executable(OpenGL main.cpp
         utils.h
         Shader.cpp
         Shader.h
-        Shader.h)
+        Shader.h
+        stb.cpp)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
