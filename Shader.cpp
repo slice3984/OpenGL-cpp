@@ -27,6 +27,10 @@ void Shader::setFloat(const std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(progId, name.c_str()), value);
 }
 
+void Shader::setMat4(const std::string &name, const glm::mat4 &matrix) {
+    glUniformMatrix4fv(glGetUniformLocation(progId, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 GLuint Shader::compileShader(const std::string &shaderPath, GLenum shaderType) const {
     std::string shaderCode;
 

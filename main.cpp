@@ -5,6 +5,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "utils.h"
 #include "Shader.h"
 
@@ -170,6 +173,15 @@ int main() {
         float timeValue = glfwGetTime();
         float scaleValue = sin(timeValue * 3) / 4.0f + 0.75f;
         shader.setFloat("colorScale", scaleValue);
+
+        float scalingFactor = sin(timeValue * 2) * 0.5 + 0.5;
+        glm::mat4 trans = glm::mat4(1.0f);
+
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)timeValue * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(scalingFactor));
+
+        shader.setMat4("transform", trans);
 
         glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
