@@ -1,22 +1,29 @@
 #include <iostream>
-#include <string>
-#include <format>
-#include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "utils.h"
 #include "Shader.h"
+#include "Camera.h"
 
 // Window dimensions
 const GLint WIDTH = 800;
 const GLint HEIGHT = 600;
 
 void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height);
+void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn);
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
+
+Camera camera{0.05f, 0.1f, false};
+bool firstMouse = true;
+float lastX = WIDTH / 2.0f;
+float lastY = HEIGHT / 2.0f;
+
+// Timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main() {
     // Init GLFW
@@ -60,6 +67,10 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Gen texture
     GLuint texture;
@@ -193,6 +204,11 @@ int main() {
 
     // Loop until window closed
     while (!glfwWindowShouldClose(window)) {
+        // Per frame time logic
+        float currentTime = static_cast<float>(glfwGetTime());
+        deltaTime = currentTime - lastFrame;
+        lastFrame = currentTime;
+
         // Get & handle user input events
         processInput(window);
 
@@ -214,18 +230,16 @@ int main() {
         shader.setFloat("colorScale", scaleValue);
 
         // MVP
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 projection = glm::perspective(glm::radians(camera.getCurrentFov()), float(width) / height, 0.1f, 100.0f);
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(width) / height, 0.1f, 100.0f);
-
+        camera.update(deltaTime);
+        glm::mat4 view = camera.getViewMatrix();
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
         glBindVertexArray(vao);
         for (size_t i = 0; i < 10; i++) {
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::scale(model, (glm::vec3(scaleValue)));
             model = glm::translate(model, cubePositions[i]);
             model = glm::rotate(model, timeValue * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
             shader.setMat4("model", model);
@@ -246,5 +260,52 @@ void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height) {
 }
 
 void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::UP);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::DOWN);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::FORWARD);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::BACKWARD);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::LEFT);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera.enqueueDirection(Camera::Direction::RIGHT);
+    }
+}
+
+void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn) {
+    float xPos = static_cast<float>(xPosIn);
+    float yPos = static_cast<float>(yPosIn);
+
+    if (firstMouse) {
+        lastX = xPos;
+        lastY = yPos;
+        firstMouse = false;
+    }
+
+    float xOffset = xPos - lastX;
+    float yOffset = lastY - yPos; // Reversed y-coords bottom to top
+    lastX = xPos;
+    lastY = yPos;
+
+    camera.handleMouseMovement(xOffset, yOffset);
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    camera.handleZoom(static_cast<float>(yOffset));
 }

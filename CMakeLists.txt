@@ -10,7 +10,11 @@ add_executable(OpenGL main.cpp
         Shader.cpp
         Shader.h
         Shader.h
-        stb.cpp)
+        stb.cpp
+        Camera.cpp
+        Camera.h
+        util.cpp
+        util.h)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
