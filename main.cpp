@@ -4,12 +4,18 @@
 #include "stb_image.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+// IMGUI
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include "Shader.h"
 #include "Camera.h"
 
 // Window dimensions
-const GLint WIDTH = 800;
-const GLint HEIGHT = 600;
+const GLint WIDTH = 1280;
+const GLint HEIGHT = 960;
 
 void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height);
 void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn);
@@ -17,13 +23,15 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 
 Camera camera{0.05f, 0.1f, false};
-bool firstMouse = true;
+bool resetMousePos = true;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
 
 // Timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+bool grabMouseInput = true;
 
 int main() {
     // Init GLFW
@@ -71,6 +79,15 @@ int main() {
     glfwSetScrollCallback(window, scrollCallback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // ---- IMGUI ----
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+    // ----------------
 
     // Gen texture
     GLuint texture;
@@ -204,6 +221,13 @@ int main() {
 
     // Loop until window closed
     while (!glfwWindowShouldClose(window)) {
+        // ---- IMGUI ----
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        // ImGui::ShowDemoWindow();
+        // ---------------
+
         // Per frame time logic
         float currentTime = static_cast<float>(glfwGetTime());
         deltaTime = currentTime - lastFrame;
@@ -237,20 +261,32 @@ int main() {
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
+        ImGui::Begin("Rotation degree / second", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        static float rotAngle = 50.0f;
+        ImGui::SliderFloat("Degree", &rotAngle, 0, 360);
+        ImGui::End();
+
         glBindVertexArray(vao);
         for (size_t i = 0; i < 10; i++) {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, timeValue * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+            model = glm::rotate(model, timeValue * glm::radians(rotAngle), glm::vec3(0.5f, 1.0f, 0.0f));
             shader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        // ---- IMGUI ----
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // --------------
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
 }
@@ -260,8 +296,20 @@ void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height) {
 }
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        grabMouseInput = !grabMouseInput;
+
+        if (grabMouseInput) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            resetMousePos = true;
+        } else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         camera.enqueueDirection(Camera::Direction::UP);
@@ -289,13 +337,17 @@ void processInput(GLFWwindow* window) {
 }
 
 void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn) {
+    if (!grabMouseInput) {
+        return;
+    }
+
     float xPos = static_cast<float>(xPosIn);
     float yPos = static_cast<float>(yPosIn);
 
-    if (firstMouse) {
+    if (resetMousePos) {
         lastX = xPos;
         lastY = yPos;
-        firstMouse = false;
+        resetMousePos = false;
     }
 
     float xOffset = xPos - lastX;
@@ -307,5 +359,9 @@ void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn) {
 }
 
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    if (!grabMouseInput) {
+        return;
+    }
+
     camera.handleZoom(static_cast<float>(yOffset));
 }

@@ -3,6 +3,16 @@ project("OpenGL")
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(IMGUI_SOURCES
+        external/imgui/imgui.cpp
+        external/imgui/imgui_widgets.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_demo.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/backends/imgui_impl_opengl3.cpp
+        external/imgui/backends/imgui_impl_glfw.cpp
+)
+
 add_executable(OpenGL main.cpp
         Linking/lib/glad.c
         utils.cpp
@@ -14,7 +24,9 @@ add_executable(OpenGL main.cpp
         Camera.cpp
         Camera.h
         util.cpp
-        util.h)
+        util.h
+        ${IMGUI_SOURCES}
+)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -23,6 +35,10 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(external/glfw)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/Linking/include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_SOURCE_DIR}/Linking/include
+        ${CMAKE_SOURCE_DIR}/external/imgui
+        ${CMAKE_SOURCE_DIR}/external/imgui/backends
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glfw)
