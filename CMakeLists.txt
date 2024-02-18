@@ -13,19 +13,21 @@ set(IMGUI_SOURCES
         external/imgui/backends/imgui_impl_glfw.cpp
 )
 
-add_executable(OpenGL main.cpp
-        Linking/lib/glad.c
-        utils.cpp
-        utils.h
-        Shader.cpp
-        Shader.h
-        Shader.h
-        stb.cpp
-        Camera.cpp
-        Camera.h
-        util.cpp
-        util.h
+add_executable(OpenGL src/main.cpp
         ${IMGUI_SOURCES}
+        Linking/lib/glad.c
+        src/utils.cpp
+        src/utils.h
+        src/Shader.cpp
+        src/Shader.h
+        src/Shader.h
+        src/stb.cpp
+        src/Camera.cpp
+        src/Camera.h
+        src/util.cpp
+        src/util.h
+        src/InputManager.h
+        src/imgui_windows/ControlsWindow.h
 )
 
 # GLFW

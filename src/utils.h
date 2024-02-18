@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string>
 #include <format>
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 
 namespace utils {

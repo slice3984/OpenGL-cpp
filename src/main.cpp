@@ -1,15 +1,19 @@
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 #include "stb_image.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
-// IMGUI
+// ImGui
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+// ImGui Windows
+#include "imgui_windows/ControlsWindow.h"
+
+#include "InputManager.h"
 #include "Shader.h"
 #include "Camera.h"
 
@@ -20,7 +24,10 @@ const GLint HEIGHT = 960;
 void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height);
 void mouseCallback(GLFWwindow* window, double xPosIn, double yPosIn);
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
+
+InputManager inputManager;
 
 Camera camera{0.05f, 0.1f, false};
 bool resetMousePos = true;
@@ -77,10 +84,11 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    glfwSetKeyCallback(window, keyboardCallback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // ---- IMGUI ----
+    // ---- ImGui ----
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -219,14 +227,20 @@ int main() {
     // Wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // ImGui window instances
+    ControlsWindow controlsWindow;
+
     // Loop until window closed
     while (!glfwWindowShouldClose(window)) {
-        // ---- IMGUI ----
+        // ---- ImGui ----
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         // ImGui::ShowDemoWindow();
         // ---------------
+
+        controlsWindow.render();
+
 
         // Per frame time logic
         float currentTime = static_cast<float>(glfwGetTime());
@@ -276,10 +290,12 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        // ---- IMGUI ----
+        // ---- ImGui ----
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         // --------------
+
+        inputManager.resetKeyPresses();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -296,11 +312,11 @@ void framebufferSizeCallback(GLFWwindow* window, GLint width, GLint height) {
 }
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if (inputManager.wasKeyPressed(GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(window, true);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+    if (inputManager.wasKeyPressed(GLFW_KEY_E)) {
         grabMouseInput = !grabMouseInput;
 
         if (grabMouseInput) {
@@ -311,27 +327,27 @@ void processInput(GLFWwindow* window) {
         }
     }
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_SPACE)) {
         camera.enqueueDirection(Camera::Direction::UP);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
         camera.enqueueDirection(Camera::Direction::DOWN);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_W)) {
         camera.enqueueDirection(Camera::Direction::FORWARD);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_S)) {
         camera.enqueueDirection(Camera::Direction::BACKWARD);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_A)) {
         camera.enqueueDirection(Camera::Direction::LEFT);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    if (inputManager.isKeyDown(GLFW_KEY_D)) {
         camera.enqueueDirection(Camera::Direction::RIGHT);
     }
 }
@@ -364,4 +380,14 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     }
 
     camera.handleZoom(static_cast<float>(yOffset));
+}
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (action == GLFW_PRESS) {
+        inputManager.setKeyState(key, true);
+    }
+
+    if (action == GLFW_RELEASE) {
+        inputManager.setKeyState(key, false);
+    }
 }
