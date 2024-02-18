@@ -28,6 +28,9 @@ add_executable(OpenGL src/main.cpp
         src/util.h
         src/InputManager.h
         src/imgui_windows/ControlsWindow.h
+        src/ModelImporter.cpp
+        src/ModelImporter.h
+        src/ModelObject.h
 )
 
 # GLFW

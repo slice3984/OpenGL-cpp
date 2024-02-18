@@ -15,12 +15,17 @@ public:
                 {"A", "Move left"},
                 {"S", "Move backwards"},
                 {"D", "Move right"},
-                {"SPACE", "move up"},
-                {"C", "move down"}
+                {"SPACE", "Move up"},
+                {"LSHIFT", "Move down"}
         };
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+        if (!ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::End();
+            return;
+        }
+
         ImGui::BeginTable("Controls", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
 
         ImVec2 cellPadding(10.0f, 5.0f);

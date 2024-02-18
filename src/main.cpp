@@ -16,6 +16,7 @@
 #include "InputManager.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "ModelImporter.h"
 
 // Window dimensions
 const GLint WIDTH = 1280;
@@ -41,6 +42,8 @@ float lastFrame = 0.0f;
 bool grabMouseInput = true;
 
 int main() {
+    ModelImporter importer;
+
     // Init GLFW
     if (!glfwInit()) {
         printf("GLFW init failed!");
