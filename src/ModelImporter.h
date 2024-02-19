@@ -13,6 +13,7 @@
 #include "stb_image.h"
 #include "util.h"
 #include "ModelObject.h"
+#include "ObjModel.h"
 
 /*
  * - Only supports models without multiple materials per object
@@ -22,8 +23,8 @@
 class ModelImporter {
 public:
     ModelImporter();
-    std::vector<ModelObject> loadModel(const std::string& path);
-    std::vector<std::vector<ModelObject>> loadModelFolder(const std::string& path);
+    ObjModel loadModel(const std::string& path);
+    std::vector<ObjModel> loadModelFolder(const std::string& path);
 
 private:
     [[nodiscard]] std::map<std::string, ModelObjectTexture> parseMtl(const std::string& path) const;

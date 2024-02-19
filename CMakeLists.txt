@@ -31,6 +31,8 @@ add_executable(OpenGL src/main.cpp
         src/ModelImporter.cpp
         src/ModelImporter.h
         src/ModelObject.h
+        src/ModelStore.cpp
+        src/ModelStore.h
 )
 
 # GLFW

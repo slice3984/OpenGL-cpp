@@ -43,3 +43,6 @@ _deps
 ### CMake Patch ###
 # External projects
 *-prefix/
+
+# Allow obj files for assets dir
+!assets/**/*.obj

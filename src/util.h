@@ -15,6 +15,7 @@ namespace util {
     void printVec3(glm::vec3 vec);
     std::string stripLastWordFromPath(const std::string& path);
     std::string normalizePath(const std::filesystem::path& path);
+    std::string extractFileName(const std::string& path);
 }
 
 

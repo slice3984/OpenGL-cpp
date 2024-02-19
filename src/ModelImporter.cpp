@@ -6,13 +6,14 @@
 
 ModelImporter::ModelImporter() = default;
 
-std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
+ObjModel ModelImporter::loadModel(const std::string &path) {
     std::vector<ModelObject> modelObjects;
     std::map<std::string, ModelObjectTexture> textures;
     std::fstream objFile(path);
 
     // Object properties
     std::string name;
+    std::string objectName;
     std::string material;
     std::vector<glm::vec3> vertices;
     std::vector<size_t> vertexIndices;
@@ -23,6 +24,7 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
     std::vector<glm::vec2> finalTexCoords;
 
     if (objFile.is_open()) {
+        name = util::extractFileName(path);
 
         std::string line;
         while (std::getline(objFile, line)) {
@@ -43,9 +45,9 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
             // Object name
             if (type == "o") {
                 // Store previously parsed object
-                if (!name.empty()) {
+                if (!objectName.empty()) {
                     modelObjects.emplace_back(
-                            std::move(name),
+                            std::move(objectName),
                             textures[material],
                             std::move(finalVertices),
                             std::move(finalTexCoords)
@@ -55,7 +57,7 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
                     finalTexCoords.clear();
                 }
 
-                iss >> name;
+                iss >> objectName;
             }
 
             // Vertex
@@ -109,9 +111,9 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
         }
 
         // Last Object
-        if (!name.empty()) {
+        if (!objectName.empty()) {
             modelObjects.emplace_back(
-                    std::move(name),
+                    std::move(objectName),
                     textures[material],
                     std::move(finalVertices),
                     std::move(finalTexCoords)
@@ -121,7 +123,7 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
 
     objFile.close();
 
-    return std::move(modelObjects);
+    return {name, std::move(modelObjects)};
 }
 
 std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::string &path) const {
@@ -161,14 +163,15 @@ std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::str
         int width{}, height{}, nChannels{};
         unsigned char *data = stbi_load(mat.second.c_str(), &width, &height, &nChannels, 0);
 
+        stbi_set_flip_vertically_on_load(true);
         textures[mat.first] = ModelObjectTexture{data, width, height, nChannels};
     }
 
     return textures;
 }
 
-std::vector<std::vector<ModelObject>> ModelImporter::loadModelFolder(const std::string &path) {
-    std::vector<std::vector<ModelObject>> modelObjects;
+std::vector<ObjModel> ModelImporter::loadModelFolder(const std::string &path) {
+    std::vector<ObjModel> modelObjects;
 
     // Recursive iterate directories
     std::filesystem::recursive_directory_iterator iter;
@@ -187,6 +190,7 @@ std::vector<std::vector<ModelObject>> ModelImporter::loadModelFolder(const std::
             }
         }
     }
+
     return modelObjects;
 }
 

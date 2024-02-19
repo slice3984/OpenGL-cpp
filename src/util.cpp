@@ -51,4 +51,23 @@ namespace util {
 
         return normalizedPath;
     }
+
+    std::string extractFileName(const std::string& path) {
+        size_t separatorPos = path.find_last_of("/\\");
+
+        std::string fileName;
+
+        if (separatorPos != std::string::npos) {
+            fileName = path.substr(separatorPos + 1);
+        } else {
+            fileName = path;
+        }
+
+        size_t extensionPos = fileName.rfind('.');
+        if (extensionPos != std::string::npos) {
+            fileName = fileName.substr(0, extensionPos);
+        }
+
+        return fileName;
+    }
 }

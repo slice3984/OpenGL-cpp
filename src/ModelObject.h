@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 #include "glm/glm.hpp"
+#include "stb_image.h"
 
 struct ModelObjectTexture {
     unsigned char* textureData;
@@ -25,7 +26,7 @@ private:
     std::vector<glm::vec2> texCoords;
 
 public:
-    ModelObject(std::string&&  name,
+    ModelObject(std::string&& name,
                 ModelObjectTexture texture,
                 std::vector<glm::vec3>&& vertices,
                 std::vector<glm::vec2>&& texCoords
