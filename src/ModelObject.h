@@ -20,7 +20,7 @@ struct ModelObjectTexture {
 class ModelObject {
 private:
     std::string name;
-    ModelObjectTexture texture;
+    ModelObjectTexture texture{};
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> texCoords;
 
@@ -34,6 +34,15 @@ public:
             texture(texture),
             vertices{std::forward<std::vector<glm::vec3>>(vertices)},
             texCoords{std::forward<std::vector<glm::vec2>>(texCoords)} {}
+
+    ModelObject(ModelObject&& other) noexcept {
+        name = other.name;
+        texture = other.texture;
+        vertices = other.vertices;
+        texCoords = other.texCoords;
+
+        other.texture.textureData = nullptr;
+    }
 
     [[nodiscard]] const std::string& getName() const {
         return name;
@@ -52,7 +61,11 @@ public:
     }
 
     ~ModelObject() {
-        stbi_image_free(texture.textureData);
+        // The same texture could be shared across multiple model objects and could be freed previously
+        if (texture.textureData != nullptr) {
+            stbi_image_free(texture.textureData);
+            texture.textureData = nullptr;
+        }
     }
 };
 

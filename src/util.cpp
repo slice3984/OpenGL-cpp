@@ -30,4 +30,25 @@ namespace util {
 
         return result;
     }
+
+    void printVec3(glm::vec3 vec) {
+        std::cout << "Vector X: " << vec.x << " Y: " << vec.y << " Z: " << vec.z << std::endl;
+    }
+
+    std::string stripLastWordFromPath(const std::string& path) {
+        size_t lastSlashPos = path.find_last_of('/');
+
+        if (lastSlashPos != std::string::npos) {
+            return path.substr(0, lastSlashPos + 1);
+        }
+
+        return path;
+    }
+
+    std::string normalizePath(const std::filesystem::path& path) {
+        std::string normalizedPath = path.string();
+        std::replace(normalizedPath.begin(), normalizedPath.end(), '\\', '/');
+
+        return normalizedPath;
+    }
 }

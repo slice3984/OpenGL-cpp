@@ -36,7 +36,8 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
                 std::string texturePath;
                 iss >> texturePath;
 
-                textures = parseMtl(texturePath);
+                // We expect the MTL file to be in the same directory
+                textures = parseMtl(util::stripLastWordFromPath(path) + texturePath);
             }
 
             // Object name
@@ -120,7 +121,7 @@ std::vector<ModelObject> ModelImporter::loadModel(const std::string &path) {
 
     objFile.close();
 
-    return modelObjects;
+    return std::move(modelObjects);
 }
 
 std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::string &path) const {
@@ -146,8 +147,10 @@ std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::str
 
         // Texture path
         if (type == "map_Kd") {
-            iss >> materialPath;
+            std::string materialFileName;
+            iss >> materialFileName;
 
+            materialPath = util::stripLastWordFromPath(path) + materialFileName;
             materials.emplace_back(materialName, materialPath);
         }
     }
@@ -162,6 +165,29 @@ std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::str
     }
 
     return textures;
+}
+
+std::vector<std::vector<ModelObject>> ModelImporter::loadModelFolder(const std::string &path) {
+    std::vector<std::vector<ModelObject>> modelObjects;
+
+    // Recursive iterate directories
+    std::filesystem::recursive_directory_iterator iter;
+
+    try {
+        iter = std::filesystem::recursive_directory_iterator(path);
+    } catch (...) {
+        throw;
+    }
+
+    for (const auto& entry : iter) {
+        if (std::filesystem::is_regular_file(entry)) {
+            // Check if obj file
+            if (entry.path().extension() == ".obj") {
+                modelObjects.emplace_back(loadModel(util::normalizePath(entry.path())));
+            }
+        }
+    }
+    return modelObjects;
 }
 
 

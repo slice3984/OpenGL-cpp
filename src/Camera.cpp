@@ -112,7 +112,6 @@ glm::vec3 Camera::calculateDirectionVector() {
     if (fpsCamera) {
         dirVec.y = 0.0f;
     }
-
     return glm::normalize(dirVec);
 }
 
@@ -128,7 +127,6 @@ glm::vec3 Camera::calculateVelocityDelta(float deltaTime) {
 
 void Camera::update(float deltaTime) {
     velocity += calculateVelocityDelta(deltaTime);
-
     float speed = glm::length(velocity);
     velocity = speed > maxVelocity ? (glm::normalize(velocity) * maxVelocity) : velocity;
 

@@ -43,7 +43,7 @@ bool grabMouseInput = true;
 
 int main() {
     ModelImporter importer;
-
+    std::vector<std::vector<ModelObject>> modelObjects = importer.loadModelFolder("../assets/models");
     // Init GLFW
     if (!glfwInit()) {
         printf("GLFW init failed!");
@@ -95,7 +95,7 @@ int main() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
     // ----------------
