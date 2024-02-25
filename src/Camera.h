@@ -25,6 +25,7 @@ public:
            float maxVelocity,
            bool fpsCamera);
     explicit Camera(float mouseSensitivity, float camAccel, bool fpsCamera = false);
+    Camera(float mouseSensitivty, float camAccel, glm::vec3 cameraPos, bool fpsCamera = false);
 
     void handleMouseMovement(float deltaX, float deltaY);
     void handleZoom(float deltaY);

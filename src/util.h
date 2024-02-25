@@ -8,6 +8,9 @@
 #include <iostream>
 #include <chrono>
 #include "glm/glm.hpp"
+#include "stb_image.h"
+#include "ImageData.h"
+
 
 namespace util {
     long long getCurrentTimeInMs();
@@ -16,7 +19,7 @@ namespace util {
     std::string stripLastWordFromPath(const std::string& path);
     std::string normalizePath(const std::filesystem::path& path);
     std::string extractFileName(const std::string& path);
+    ImageData loadImage(const std::string &path, bool verticalFlip = true);
 }
-
 
 #endif //OPENGL_UTIL_H

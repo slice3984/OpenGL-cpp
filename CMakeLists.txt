@@ -11,13 +11,13 @@ set(IMGUI_SOURCES
         external/imgui/imgui_tables.cpp
         external/imgui/backends/imgui_impl_opengl3.cpp
         external/imgui/backends/imgui_impl_glfw.cpp
+        src/RenderQueue.cpp
+        src/RenderQueue.h
 )
 
 add_executable(OpenGL src/main.cpp
         ${IMGUI_SOURCES}
         Linking/lib/glad.c
-        src/utils.cpp
-        src/utils.h
         src/Shader.cpp
         src/Shader.h
         src/Shader.h
@@ -30,9 +30,12 @@ add_executable(OpenGL src/main.cpp
         src/imgui_windows/ControlsWindow.h
         src/ModelImporter.cpp
         src/ModelImporter.h
-        src/ModelObject.h
+        src/TexturedMeshData.h
         src/ModelStore.cpp
         src/ModelStore.h
+        src/RenderEntity.h
+        src/Renderer.cpp
+        src/Renderer.h
 )
 
 # GLFW

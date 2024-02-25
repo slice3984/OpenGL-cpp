@@ -6,9 +6,9 @@
 
 ModelImporter::ModelImporter() = default;
 
-ObjModel ModelImporter::loadModel(const std::string &path) {
-    std::vector<ModelObject> modelObjects;
-    std::map<std::string, ModelObjectTexture> textures;
+ModelData ModelImporter::loadModel(const std::string &path) {
+    std::vector<TexturedMeshData> modelObjects;
+    std::map<std::string, ImageData> textures;
     std::fstream objFile(path);
 
     // Object properties
@@ -126,8 +126,8 @@ ObjModel ModelImporter::loadModel(const std::string &path) {
     return {name, std::move(modelObjects)};
 }
 
-std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::string &path) const {
-    std::map<std::string, ModelObjectTexture> textures;
+std::map<std::string, ImageData> ModelImporter::parseMtl(const std::string &path) const {
+    std::map<std::string, ImageData> textures;
     std::vector<std::pair<std::string, std::string>> materials;
 
     std::fstream mtlFile(path);
@@ -160,18 +160,14 @@ std::map<std::string, ModelObjectTexture> ModelImporter::parseMtl(const std::str
     mtlFile.close();
 
     for (const auto &mat: materials) {
-        int width{}, height{}, nChannels{};
-        unsigned char *data = stbi_load(mat.second.c_str(), &width, &height, &nChannels, 0);
-
-        stbi_set_flip_vertically_on_load(true);
-        textures[mat.first] = ModelObjectTexture{data, width, height, nChannels};
+        textures[mat.first] = util::loadImage(mat.second);
     }
 
     return textures;
 }
 
-std::vector<ObjModel> ModelImporter::loadModelFolder(const std::string &path) {
-    std::vector<ObjModel> modelObjects;
+std::vector<ModelData> ModelImporter::loadModelFolder(const std::string &path) {
+    std::vector<ModelData> modelObjects;
 
     // Recursive iterate directories
     std::filesystem::recursive_directory_iterator iter;

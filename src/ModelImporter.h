@@ -12,8 +12,8 @@
 #include "glm/glm.hpp"
 #include "stb_image.h"
 #include "util.h"
-#include "ModelObject.h"
-#include "ObjModel.h"
+#include "TexturedMeshData.h"
+#include "ModelData.h"
 
 /*
  * - Only supports models without multiple materials per object
@@ -23,11 +23,11 @@
 class ModelImporter {
 public:
     ModelImporter();
-    ObjModel loadModel(const std::string& path);
-    std::vector<ObjModel> loadModelFolder(const std::string& path);
+    ModelData loadModel(const std::string& path);
+    std::vector<ModelData> loadModelFolder(const std::string& path);
 
 private:
-    [[nodiscard]] std::map<std::string, ModelObjectTexture> parseMtl(const std::string& path) const;
+    [[nodiscard]] std::map<std::string, ImageData> parseMtl(const std::string& path) const;
 };
 
 

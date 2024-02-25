@@ -3,15 +3,17 @@
 //
 
 #include "ModelStore.h"
+#include "GPUTexturedMesh.h"
+#include "ImageData.h"
 
-bool ModelStore::registerModel(const ObjModel& objModel) {
+bool ModelStore::registerModel(const ModelData& objModel) {
     if (loadedModels.contains(objModel.name)) {
         return false;
     }
 
-    std::vector<GPUModelObject> objects;
-    for (const ModelObject& object : objModel.objects) {
-        GPUModelObject gpuModelObject{};
+    std::vector<GPUTexturedMesh> objects;
+    for (const TexturedMeshData& object : objModel.objects) {
+        GPUTexturedMesh gpuModelObject{};
         gpuModelObject.vertexCount = object.getVertices().size();
 
         /*
@@ -41,13 +43,13 @@ bool ModelStore::registerModel(const ObjModel& objModel) {
         glGenTextures(1, &gpuModelObject.textureId);
         glBindTexture(GL_TEXTURE_2D, gpuModelObject.textureId);
 
-        const ModelObjectTexture& texture = object.getImageData();
+        const ImageData& texture = object.getImageData();
 
         // RGB
         if (texture.nChannels == 3) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture.textureData);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture.imageData);
         } else {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.textureData);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.imageData);
         }
 
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -79,26 +81,10 @@ bool ModelStore::registerModel(const ObjModel& objModel) {
     return true;
 }
 
-void ModelStore::renderModel(const std::string &name) {
-    if (!loadedModels.contains(name)) {
-        return;
-    }
-
-    glActiveTexture(GL_TEXTURE0);
-
-    for (const GPUModelObject& object : loadedModels[name]) {
-        glBindTexture(GL_TEXTURE_2D, object.textureId);
-        glBindVertexArray(object.vao);
-
-        glDrawArrays(GL_TRIANGLES, 0, object.vertexCount);
-        glBindVertexArray(0);
-    }
-}
-
-bool ModelStore::registerModel(const std::vector<ObjModel> &objModels) {
+bool ModelStore::registerModel(const std::vector<ModelData> &objModels) {
     bool gotNewModel = false;
 
-    for (const ObjModel& model : objModels) {
+    for (const ModelData& model : objModels) {
         std::string modelName = model.name;
 
         if (!loadedModels.contains(modelName)) {
@@ -108,4 +94,16 @@ bool ModelStore::registerModel(const std::vector<ObjModel> &objModels) {
     }
 
     return gotNewModel;
+}
+
+std::optional<std::reference_wrapper<const std::vector<GPUTexturedMesh>>> ModelStore::tryGetModel(const std::string &name) const {
+    if (auto it = loadedModels.find(name); it != loadedModels.end()) {
+        return { it->second };
+    }
+
+    return std::nullopt;
+}
+
+const std::vector<GPUTexturedMesh> &ModelStore::getModel(const std::string &name) const {
+    return loadedModels.at(name);
 }

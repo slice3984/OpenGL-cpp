@@ -6,25 +6,22 @@
 #define OPENGL_MODELSTORE_H
 #include <vector>
 #include <map>
+#include <optional>
+#include <memory>
 #include "glad/glad.h"
-#include "ModelObject.h"
-#include "ObjModel.h"
-
-struct GPUModelObject {
-    GLuint textureId;
-    GLuint vao;
-    GLuint vbo;
-    GLsizei vertexCount;
-};
+#include "TexturedMeshData.h"
+#include "ModelData.h"
+#include "GPUTexturedMesh.h"
 
 class ModelStore {
 public:
-    bool registerModel(const ObjModel& objModel);
-    bool registerModel(const std::vector<ObjModel>& objModels);
-    void renderModel(const std::string& name);
+    bool registerModel(const ModelData& objModel);
+    bool registerModel(const std::vector<ModelData>& objModels);
+    [[nodiscard]] std::optional<std::reference_wrapper<const std::vector<GPUTexturedMesh>>> tryGetModel(const std::string& name) const;
+    [[nodiscard]] const std::vector<GPUTexturedMesh>& getModel(const std::string& name) const;
 
 private:
-    std::map<std::string, std::vector<GPUModelObject>> loadedModels;
+    std::map<std::string, std::vector<GPUTexturedMesh>> loadedModels;
 };
 
 

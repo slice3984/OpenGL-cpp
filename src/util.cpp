@@ -70,4 +70,18 @@ namespace util {
 
         return fileName;
     }
+
+    ImageData loadImage(const std::string &path, bool verticalFlip) {
+        int width, height, nChannels;
+
+        stbi_set_flip_vertically_on_load(verticalFlip);
+        unsigned char* data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
+
+        if (data == nullptr) {
+            return { false, nullptr, 0, 0, 0 };
+        }
+
+        return { true, data, width, height, nChannels };
+    }
 }
+

@@ -28,6 +28,16 @@ Camera::Camera(float mouseSensitivity, float camAccel, bool fpsCamera) : Camera(
         0.5f,
         fpsCamera) {}
 
+Camera::Camera(float mouseSensitivty, float camAccel, glm::vec3 cameraPos, bool fpsCamera) : Camera(
+        cameraPos,
+        glm::vec3(0.0f, 0.0f, -1.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        mouseSensitivty,
+        camAccel,
+        0.5f,
+        fpsCamera
+        ) {}
+
 void Camera::handleMouseMovement(float deltaX, float deltaY) {
     deltaX *= mouseSensitivity;
     deltaY *= mouseSensitivity;
@@ -136,3 +146,5 @@ void Camera::update(float deltaTime) {
 void Camera::enqueueDirection(Direction direction) {
     keyStrokes.push(direction);
 }
+
+
