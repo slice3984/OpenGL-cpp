@@ -9,11 +9,11 @@
 #include <utility>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "GPUTexturedMesh.h"
+#include "Model.h"
 
 class RenderEntity {
 private:
-    std::vector<GPUTexturedMesh> GPUModelObjs{};
+    Model& model;
     glm::mat4 modelMatrix = glm::identity<glm::mat4>();
     glm::mat4 translationMatrix = glm::identity<glm::mat4>();
     glm::mat4 rotationMatrix = glm::identity<glm::mat4>();
@@ -25,11 +25,11 @@ private:
 
 public:
     // Constructors
-    RenderEntity(std::vector<GPUTexturedMesh> GPUModelObjs,
+    RenderEntity(Model& model,
                  glm::vec3 translationVec,
                  glm::vec3 rotationAxis,
                  float rotationAngle,
-                 glm::vec3 scaleVec) : GPUModelObjs(std::move(GPUModelObjs)) {
+                 glm::vec3 scaleVec) : model(model) {
         translationMatrix = glm::translate(translationMatrix, translationVec);
         rotationMatrix = glm::rotate(rotationMatrix, rotationAngle, rotationAxis);
         scaleMatrix = glm::scale(scaleMatrix, scaleVec);
@@ -38,28 +38,28 @@ public:
     }
 
     // No transforms
-    RenderEntity(std::vector<GPUTexturedMesh> GPUModelObjs) : GPUModelObjs(std::move(GPUModelObjs)) {
+    RenderEntity(Model& model) : model(model) {
         updateModelMatrix();
     }
 
     // Translation
-    RenderEntity(std::vector<GPUTexturedMesh> GPUModelObjs, glm::vec3 translationVec) :
-            RenderEntity(std::move(GPUModelObjs), translationVec, glm::vec3{1.0f}, 0.0, glm::vec3{1.0f}) {}
+    RenderEntity(Model& model, glm::vec3 translationVec) :
+            RenderEntity(model, translationVec, glm::vec3{1.0f}, 0.0, glm::vec3{1.0f}) {}
 
     // Rotation
-    RenderEntity(std::vector<GPUTexturedMesh> GPUModelObjs, glm::vec3 rotationAxis, float rotationAngle) :
-            RenderEntity(std::move(GPUModelObjs), glm::vec3{}, rotationAxis, rotationAngle, glm::vec3{}) {}
+    RenderEntity(Model& model, glm::vec3 rotationAxis, float rotationAngle) :
+            RenderEntity(model, glm::vec3{}, rotationAxis, rotationAngle, glm::vec3{}) {}
 
     // Translation & Scale
-    RenderEntity(std::vector<GPUTexturedMesh> GPUModelObjs, glm::vec3 translationVec, glm::vec3 scaleVec) :
-            RenderEntity(std::move(GPUModelObjs), translationVec, glm::vec3{}, 0.0, scaleVec) {}
+    RenderEntity(Model& model, glm::vec3 translationVec, glm::vec3 scaleVec) :
+            RenderEntity(model, translationVec, glm::vec3{0.0f, 1.0f, 0.0f}, 0.0, scaleVec) {}
 
     [[nodiscard]] glm::mat4 getModelMatrix() const {
         return modelMatrix;
     }
 
-    [[nodiscard]] const std::vector<GPUTexturedMesh>& getGPUObjects() const {
-        return GPUModelObjs;
+    [[nodiscard]] const Model& getModel() const {
+        return model;
     }
 };
 

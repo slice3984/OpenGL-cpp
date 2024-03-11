@@ -16,10 +16,14 @@
 #include "InputManager.h"
 #include "Shader.h"
 #include "Camera.h"
-#include "ModelImporter.h"
-#include "ModelStore.h"
 #include "RenderQueue.h"
 #include "Renderer.h"
+#include "tiny_gltf.h"
+#include "TextureStore.h"
+#include "MaterialStore.h"
+#include "ModelStore.h"
+#include "GltfModelImporter.h"
+#include "ModelGenerator.h"
 
 float maxAniso;
 
@@ -33,10 +37,9 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window);
 
-std::vector<GPUTexturedMesh> generateFloor(float width, float height, ImageData tileTexture, bool centerFloor = true);
 InputManager inputManager;
 
-Camera camera{0.05f, 0.1f, glm::vec3{0.0f, 2.0f, 0.0f}, false};
+Camera camera{0.05f, 0.3f, glm::vec3{0.0f, 3.0f, 0.0f}, false};
 bool resetMousePos = true;
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
@@ -48,6 +51,10 @@ float lastFrame = 0.0f;
 bool grabMouseInput = true;
 
 int main() {
+    TextureStore textureStore;
+    MaterialStore materialStore;
+    ModelStore modelStore;
+
     // Init GLFW
     if (!glfwInit()) {
         printf("GLFW init failed!");
@@ -88,13 +95,34 @@ int main() {
     glViewport(0, 0, bufferWidth, bufferHeight);
     glEnable(GL_DEPTH_TEST);
 
-    glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso );
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetKeyCallback(window, keyboardCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    GltfModelImporter gltfModelImporter(textureStore, materialStore, modelStore);
+
+    gltfModelImporter.uploadModelDirectory("../assets/models/");
+    ModelGenerator::generateFloor("floor", 128, 128, util::loadImage("../assets/textures/Asphalt024A_1K-JPG_Color.jpg"), maxAniso, true, textureStore, materialStore, modelStore);
+
+    RenderQueue renderQueue{"scene"};
+
+    renderQueue
+    .addModel({
+        modelStore.getModel("floor")
+    })
+    .addModel({
+        modelStore.getModel("chair"),
+        glm::vec3{0.0f, 0.0f, 0.0f},
+        glm::vec3{10.0f}
+    })
+    .addModel({
+        modelStore.getModel("Lantern"),
+        glm::vec3{4.0f, 12.5f, 4.0f}
+    });
 
     // ---- ImGui ----
     IMGUI_CHECKVERSION();
@@ -105,40 +133,13 @@ int main() {
     ImGui_ImplOpenGL3_Init();
     // ----------------
 
-    ModelImporter importer;
-    std::vector<ModelData> objModels = importer.loadModelFolder("../assets/models");
-
-    ModelStore modelStore;
-    modelStore.registerModel(objModels);
-
-    RenderQueue renderQueue{"scene"};
-
-    // TODO: Maybe pass transformation vectors as extra arguments
-    renderQueue
-    .addModel({
-        generateFloor(100, 100, util::loadImage("../assets/textures/Asphalt024A_1K-JPG_Color.jpg"))
-    })
-    .addModel({
-        modelStore.getModel("wooden_barrel"),
-        glm::vec3{5.0f, 0.0f, 5.0f}
-    })
-    .addModel({
-        modelStore.getModel("pallet"),
-        glm::vec3{3.0f, 0.5f, 1.0f}
-    })
-    .addModel({
-        modelStore.getModel("bullet"),
-        glm::vec3{10.0f, 3.0f, 3.0f},
-        glm::vec3{2.0f}
-    });
-
     Shader shader("../shaders/vert.glsl", "../shaders/frag.glsl");
-
     shader.use();
+
     Renderer renderer{shader};
     renderer.addQueue(renderQueue);
 
-    shader.setInt("tex", 0);
+    shader.setInt("baseColor", 0);
 
     // Wireframe
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -183,8 +184,10 @@ int main() {
         glm::mat4 view = camera.getViewMatrix();
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
+        shader.setMat4("model", glm::identity<glm::mat4>());
 
         renderer.renderAllQueues();
+
         // ---- ImGui ----
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -287,63 +290,4 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (action == GLFW_RELEASE) {
         inputManager.setKeyState(key, false);
     }
-}
-
-std::vector<GPUTexturedMesh> generateFloor(float width, float height, ImageData tileTexture, bool centerFloor) {
-    // Half sizes
-    float hw = width / 2;
-    float hh = height / 2;
-
-    GPUTexturedMesh gpuModelObject{};
-    gpuModelObject.vertexCount = 6;
-
-    GLfloat vertexAttributes[]{
-        // Vertices                                                  // Texture Coords
-        centerFloor ? -hw : 0.0f, 0.0f, centerFloor ? hh : 0.0f,     0.0f, 0.0f,            // Bottom Left
-        centerFloor ? hw : width, 0.0f, centerFloor ? hh : 0.0f,     width / 4, 0.0f,       // Bottom Right
-        centerFloor ? hw : width, 0.0f, centerFloor ? -hh : -height, width / 4, height / 4, // Top Right
-
-        centerFloor ? -hw : 0.0f, 0.0f, centerFloor ? hh : 0.0f,     0.0f, 0.0f,            // Bottom Left
-        centerFloor ? hw : width, 0.0f, centerFloor ? -hh : -height, width / 4, height / 4, // Top Right
-        centerFloor ? -hw : 0.0f, 0.0f, centerFloor ? -hh : -height, 0.0f, height / 4       // Top Left
-    };
-
-    // Texture
-    glGenTextures(1, &gpuModelObject.textureId);
-    glBindTexture(GL_TEXTURE_2D, gpuModelObject.textureId);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (tileTexture.nChannels == 3) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tileTexture.width, tileTexture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tileTexture.imageData);
-
-    } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tileTexture.width, tileTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tileTexture.imageData);
-    }
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // VAO
-    glGenVertexArrays(1, &gpuModelObject.vao);
-    glBindVertexArray(gpuModelObject.vao);
-
-    // VBO
-    glGenBuffers(1, &gpuModelObject.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, gpuModelObject.vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexAttributes), vertexAttributes, GL_STATIC_DRAW);
-
-    // Attrib pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
-    glEnableVertexAttribArray(1);
-
-    // Unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return std::vector<GPUTexturedMesh>{gpuModelObject };
 }

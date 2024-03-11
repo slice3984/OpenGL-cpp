@@ -6,10 +6,15 @@
 #define OPENGL_RENDERER_H
 #include <map>
 #include "RenderQueue.h"
+#include "MeshTypes.h"
 #include "Shader.h"
+#include "util.h"
 
 class Renderer {
 private:
+    // Default textures
+    GLuint texBaseColor;
+
     const Shader& shader;
     std::map<std::string, const RenderQueue*> renderQueues{};
     void renderQueue(const RenderQueue& queue) const;

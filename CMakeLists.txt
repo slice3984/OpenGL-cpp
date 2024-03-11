@@ -11,8 +11,6 @@ set(IMGUI_SOURCES
         external/imgui/imgui_tables.cpp
         external/imgui/backends/imgui_impl_opengl3.cpp
         external/imgui/backends/imgui_impl_glfw.cpp
-        src/RenderQueue.cpp
-        src/RenderQueue.h
 )
 
 add_executable(OpenGL src/main.cpp
@@ -28,14 +26,25 @@ add_executable(OpenGL src/main.cpp
         src/util.h
         src/InputManager.h
         src/imgui_windows/ControlsWindow.h
-        src/ModelImporter.cpp
-        src/ModelImporter.h
         src/TexturedMeshData.h
-        src/ModelStore.cpp
-        src/ModelStore.h
         src/RenderEntity.h
         src/Renderer.cpp
         src/Renderer.h
+        src/tiny_gltf.cc
+        src/MeshTypes.h
+        src/MaterialStore.cpp
+        src/MaterialStore.h
+        src/RenderQueue.cpp
+        src/RenderQueue.h
+        src/Model.h
+        src/TextureStore.cpp
+        src/TextureStore.h
+        src/ModelStore.cpp
+        src/ModelStore.h
+        src/GltfModelImporter.cpp
+        src/GltfModelImporter.h
+        src/ModelGenerator.cpp
+        src/ModelGenerator.h
 )
 
 # GLFW

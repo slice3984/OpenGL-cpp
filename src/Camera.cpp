@@ -87,7 +87,7 @@ void Camera::recalculateVectors() {
 }
 
 glm::vec3 Camera::calculateDirectionVector() {
-    glm::vec3 dirVec;
+    glm::vec3 dirVec{};
 
     // Iterate over all stored key presses
     while (!keyStrokes.empty()) {
@@ -131,7 +131,7 @@ glm::vec3 Camera::calculateForce(float accel, float frictionFac) {
 }
 
 glm::vec3 Camera::calculateVelocityDelta(float deltaTime) {
-    glm::vec3 force = calculateForce(camAccel, 1.0f);
+    glm::vec3 force = calculateForce(camAccel, 2.0f);
     return force * deltaTime;
 }
 

@@ -31,6 +31,10 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &matrix) const {
     glUniformMatrix4fv(glGetUniformLocation(progId, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
+void Shader::setVec4(const std::string &name, const glm::vec4 &vector) const {
+    glUniform4f(glGetUniformLocation(progId, name.c_str()), vector.r, vector.g, vector.b, vector.a);
+}
+
 GLuint Shader::compileShader(const std::string &shaderPath, GLenum shaderType) const {
     std::string shaderCode;
 
@@ -93,3 +97,4 @@ GLuint Shader::compileProgram(GLuint vertShader, GLuint fragShader) {
 
     return shaderProgram;
 }
+
