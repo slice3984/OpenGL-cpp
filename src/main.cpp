@@ -25,6 +25,9 @@
 #include "GltfModelImporter.h"
 #include "ModelGenerator.h"
 
+
+#include <tracy/Tracy.hpp>
+
 float maxAniso;
 
 // Window dimensions
@@ -149,6 +152,7 @@ int main() {
 
     // Loop until window closed
     while (!glfwWindowShouldClose(window)) {
+        ZoneScopedN("Render loop");
         // ---- ImGui ----
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

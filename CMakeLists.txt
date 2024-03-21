@@ -45,6 +45,7 @@ add_executable(OpenGL src/main.cpp
         src/GltfModelImporter.h
         src/ModelGenerator.cpp
         src/ModelGenerator.h
+        external/tracy/public/TracyClient.cpp
 )
 
 # GLFW
@@ -54,10 +55,15 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(external/glfw)
 
+# tracy options
+option(TRACY_ENABLE "" ON)
+option(TRACY_ON_DEMAND "" ON)
+add_subdirectory(external/tracy)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_SOURCE_DIR}/Linking/include
         ${CMAKE_SOURCE_DIR}/external/imgui
         ${CMAKE_SOURCE_DIR}/external/imgui/backends
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glfw Tracy::TracyClient)
