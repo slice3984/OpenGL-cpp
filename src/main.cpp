@@ -12,6 +12,7 @@
 
 // ImGui Windows
 #include "imgui_windows/ControlsWindow.h"
+#include "imgui_windows/QueueEditorWindow.h"
 
 #include "InputManager.h"
 #include "Shader.h"
@@ -127,6 +128,13 @@ int main() {
         glm::vec3{4.0f, 12.5f, 4.0f}
     });
 
+    RenderQueue testQueue{"test"};
+
+    testQueue
+    .addModel({
+        modelStore.getModel("chair")
+    });
+
     // ---- ImGui ----
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -149,6 +157,7 @@ int main() {
 
     // ImGui window instances
     ControlsWindow controlsWindow;
+    QueueEditorWindow queueEditorWindow{&renderQueue, &testQueue };
 
     // Loop until window closed
     while (!glfwWindowShouldClose(window)) {
@@ -157,10 +166,11 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        // ImGui::ShowDemoWindow();
+       // ImGui::ShowDemoWindow();
         // ---------------
 
         controlsWindow.render();
+        queueEditorWindow.render();
 
         // Per frame time logic
         float currentTime = static_cast<float>(glfwGetTime());

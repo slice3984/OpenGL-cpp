@@ -80,6 +80,6 @@ namespace ModelGenerator {
         MeshMaterial* material = materialStore.addMaterial("floorTileMaterial", { texture, nullptr, nullptr, nullptr, nullptr });
         MeshPrimitive meshPrimitive = { GL_TRIANGLES, GL_UNSIGNED_SHORT, vao, 6, material};
 
-        modelStore.addModel(modelName, { std::vector<MeshPrimitive> { meshPrimitive }});
+        modelStore.addModel(modelName, { modelName, std::vector<MeshPrimitive> { meshPrimitive }});
     }
 }

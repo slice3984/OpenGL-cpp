@@ -18,6 +18,7 @@ public:
     RenderQueue& addModel(const RenderEntity& renderEntity);
     [[nodiscard]] const std::string& getName() const;
     [[nodiscard]] const std::vector<RenderEntity>& getQueue() const;
+    [[nodiscard]] std::vector<RenderEntity>& getQueue();
 };
 
 

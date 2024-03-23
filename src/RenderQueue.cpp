@@ -20,3 +20,7 @@ const std::string& RenderQueue::getName() const {
 const std::vector<RenderEntity>& RenderQueue::getQueue() const {
     return queue;
 }
+
+std::vector<RenderEntity>& RenderQueue::getQueue() {
+    return queue;
+}

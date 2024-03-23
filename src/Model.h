@@ -9,6 +9,7 @@
 #include "MeshTypes.h"
 
 struct Model {
+    std::string name;
     std::vector<MeshPrimitive> primitives;
 };
 

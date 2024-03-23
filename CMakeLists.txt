@@ -46,6 +46,7 @@ add_executable(OpenGL src/main.cpp
         src/ModelGenerator.cpp
         src/ModelGenerator.h
         external/tracy/public/TracyClient.cpp
+        src/imgui_windows/QueueEditorWindow.h
 )
 
 # GLFW

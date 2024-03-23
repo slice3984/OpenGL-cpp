@@ -21,7 +21,7 @@ void GltfModelImporter::uploadModel(const std::string &file) {
     tinygltf::Node &node = model.nodes[0];
     bindNodes(primitives, modelName, model, node);
 
-    modelStore.addModel(modelName, {std::move(primitives)});
+    modelStore.addModel(modelName, {modelName, std::move(primitives)});
 }
 
 void GltfModelImporter::bindNodes(std::vector<MeshPrimitive> &primitives, const std::string &modelName,
